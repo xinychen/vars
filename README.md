@@ -1,5 +1,5 @@
 # var
-Time-varying reduced-rank vector autoregression with tensor factorization.
+Vector autoregression.
 
 ## Datasets
 

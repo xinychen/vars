@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 
 temp0 = Dataset('daymet_v4_stnxval_tmax_na_2021.nc', "r", format="NETCDF4")
 temp0 = temp0.variables
-both = [bytes.decode(s) for s in np.frombuffer(temp['station_name'][:].data, dtype='S255')]
+both = [bytes.decode(s) for s in np.frombuffer(temp0['station_name'][:].data, dtype='S255')]
 for t in [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
     temp = Dataset('daymet_v4_stnxval_tmax_na_20{}.nc'.format(t), "r", format="NETCDF4")
     temp = temp.variables
@@ -27,6 +27,7 @@ for t in [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
     idx = [str_new.index(x) for x in both]
     mat = temp['obs'][:].data[idx, :]
     mat[mat == -9999] = np.nan
+    pos = np.where(np.isnan(mat))
 
     rank = 20
     d = 1
@@ -35,7 +36,9 @@ for t in [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
     season = 1
     maxiter = 50
     mat_hat, _, _, _ = notmf(mat, mat, rank, d, lambda0, rho, season, maxiter)
-    np.savez_compressed('daymet_tmax_na_20{}.npz'.format(t), mat_hat)
+    mat_new = mat.copy()
+    mat_new[pos] = mat_hat[pos]
+    np.savez_compressed('daymet_tmax_na_20{}.npz'.format(t), mat_new)
 ```
 
 where the `notmf` algorithm is available at [tracebase](https://github.com/xinychen/tracebase) project.
@@ -63,4 +66,4 @@ for t in [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
     mat = np.append(mat, np.load('daymet_tmax_na_20{}.npz'.format(t))['arr_0'], axis = 1)
 mat.shape
 ```
-where the `shape` is `(6289, 4380)` over the 12 years from 2010 to 2021.
+where the `shape` is `(6289, 4380)` over the 12 years (i.e., 4,380 days) from 2010 to 2021.

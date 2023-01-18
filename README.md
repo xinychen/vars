@@ -70,6 +70,8 @@ fig.savefig('fluid_flow_heatmap.png', bbox_inches = 'tight')
 
 We consider to use an [NYC (yellow) taxi trip dataset](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page). We use 69 zones in Manhattan as pickup/dropoff zones and aggregate daily taxi trip volume of the data from 2012 to 2021. Therefore, the daily trip volume tensor is of size $69\times 69\times 3653$.
 
+<br>
+
 ## Algorithm Implementation: Time-Varying Reduced-Rank VAR
 
 
@@ -138,18 +140,15 @@ def trvar(mat, d, rank, maxiter = 50):
         V = conj_grad_v(Y, Z, W, G, V.T, X, d, T).T
         temp3 = W @ G
         for t in range(d, T):
-            X[t, :] = np.linalg.pinv(temp3 @ np.kron(np.eye(rank), 
-                                                     (V.T @ Z[:, t - d]).reshape([rank, 1]))) @ Y[:, t - d]
-        temp = 0
-        for t in range(d, T):
-            temp += 0.5 * np.linalg.norm(Y[:, t - d] 
-                                         - temp3 @ np.kron(X[t, :].reshape([rank, 1]), V.T) 
-                                         @ Z[:, t - d], 2) ** 2
-        loss[it] = 0.5 * temp
-    return W, G, V, X, loss
+            X[t, :] = np.linalg.pinv(temp3 @ np.kron(np.eye(rank), (V.T @ Z[:, t - d]).reshape([rank, 1]))) @ Y[:, t - d]
+    return W, G, V, X
 ```
 
+<br>
+
 ## Experiment on Fluid Dynamics
+
+- Model setting: `rank = 7` and `d = 1`.
 
 ```python
 import numpy as np
@@ -166,11 +165,98 @@ for t in range(50):
 for rank in [7]:
     for d in [1]:
         start = time.time()
-        W, G, V, X, loss = trvar(mat, d, rank)
+        W, G, V, X = trvar(mat, d, rank)
         print('rank R = {}'.format(rank))
         print('Order d = {}'.format(d))
         end = time.time()
         print('Running time: %d seconds'%(end - start))
 ```
 
+- Result visualization: spatial modes
 
+```python
+import seaborn as sns
+import scipy.io
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+color = scipy.io.loadmat('CCcool.mat')
+cc = color['CC']
+newcmp = LinearSegmentedColormap.from_list('', cc)
+
+plt.rcParams['font.size'] = 12
+fig = plt.figure(figsize = (7, 8))
+ax = fig.add_subplot(4, 2, 1)
+sns.heatmap(np.mean(tensor, axis = 2), 
+            cmap = newcmp, vmin = -5, vmax = 5, cbar = False)
+ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), np.mean(tensor, axis = 2), 
+            levels = np.linspace(0.15, 15, 20), colors = 'k', linewidths = 0.7)
+ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), np.mean(tensor, axis = 2), 
+            levels = np.linspace(-15, -0.15, 20), colors = 'k', linestyles = 'dashed', linewidths = 0.7)
+plt.xticks([])
+plt.yticks([])
+plt.title('Mean vorticity field')
+for _, spine in ax.spines.items():
+    spine.set_visible(True)
+for t in range(7):
+    if t == 0:
+        ax = fig.add_subplot(4, 2, t + 2)
+    else:
+        ax = fig.add_subplot(4, 2, t + 2)
+    ax = sns.heatmap(W[:, t].reshape((199, 449), order = 'F'), 
+                     cmap = newcmp, vmin = -0.03, vmax = 0.03, cbar = False)
+    if t < 3:
+        num = 20
+    else:
+        num = 10
+    ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), W[:, t].reshape((199, 449), order = 'F'),  
+               levels = np.linspace(0.0005, 0.05, num), colors = 'k', linewidths = 0.7)
+    ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), W[:, t].reshape((199, 449), order = 'F'), 
+               levels = np.linspace(-0.05, -0.0005, num), colors = 'k', linestyles = 'dashed', linewidths = 0.7)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title('Spatial mode {}'.format(t + 1))
+    for _, spine in ax.spines.items():
+        spine.set_visible(True)
+plt.show()
+fig.savefig("fluid_mode_trvar.png", bbox_inches = "tight")
+```
+
+<p align="center">
+<img align="middle" src="graphics/fluid_mode_trvar.png" alt="drawing" width="300">
+</p>
+
+<p align="center"><b>Figure 2</b>: Mean vorticity field and spatial modes of the fluid flow. Spatial modes are plotted by the columns of $\boldsymbol{W}$ in which seven panels correspond to the rank $R = 7$. Note that the colorbars of all modes are on the same scale.</p>
+
+- Result visualization: temporal modes
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+plt.rcParams['font.size'] = 14
+plt.rcParams['mathtext.fontset'] = 'cm'
+fig = plt.figure(figsize = (7, 9))
+for t in range(7):
+    ax = fig.add_subplot(7, 1, t + 1)
+    plt.plot(np.arange(1, 101, 1), X[:, t], linewidth = 2, alpha = 0.8, color = 'red')
+    plt.xlim([1, 100])
+    plt.xticks(np.arange(0, 101, 10))
+    if t < 6:
+        ax.tick_params(labelbottom = False)
+    ax.tick_params(direction = "in")
+    rect = patches.Rectangle((0, -1), 50, 2, linewidth=2, 
+                             edgecolor='gray', facecolor='red', alpha = 0.1)
+    ax.add_patch(rect)
+    rect = patches.Rectangle((50, -1), 50, 2, linewidth=2, 
+                             edgecolor='gray', facecolor='yellow', alpha = 0.1)
+    ax.add_patch(rect)
+plt.xlabel('$t$')
+plt.show()
+fig.savefig("fluid_temporal_mode.pdf", bbox_inches = "tight")
+```
+
+<br>
+
+## Experiment on Sea Surface Temperature
+
+- Model setting: 

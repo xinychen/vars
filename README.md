@@ -148,3 +148,29 @@ def trvar(mat, d, rank, maxiter = 50):
         loss[it] = 0.5 * temp
     return W, G, V, X, loss
 ```
+
+## Experiment on Fluid Dynamics
+
+```python
+import numpy as np
+import time
+
+tensor = np.load('tensor.npz')['arr_0']
+tensor = tensor[:, :, : 150]
+M, N, T = tensor.shape
+mat = np.zeros((M * N, 100))
+mat[:, : 50] = np.reshape(tensor[:, :, : 50], (M * N, 50), order = 'F')
+for t in range(50):
+    mat[:, t + 50] = np.reshape(tensor[:, :, 50 + 2 * t + 1], (M * N), order = 'F')
+
+for rank in [7]:
+    for d in [1]:
+        start = time.time()
+        W, G, V, X, loss = trvar(mat, d, rank)
+        print('rank R = {}'.format(rank))
+        print('Order d = {}'.format(d))
+        end = time.time()
+        print('Running time: %d seconds'%(end - start))
+```
+
+

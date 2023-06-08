@@ -259,4 +259,118 @@ fig.savefig("fluid_temporal_mode.pdf", bbox_inches = "tight")
 
 ## Experiment on Sea Surface Temperature
 
-- Model setting: 
+- Model setting: `rank = 6` and `d = 1`.
+
+NumPy implementation:
+
+```python
+import numpy as np
+from scipy.io import netcdf
+import time
+
+data = netcdf.NetCDFFile('sst.wkmean.1990-present.nc', 'r').variables
+tensor = data['sst'].data[:, :, :] / 100
+T, M, N = tensor.shape
+mat = np.zeros((M * N, T))
+for t in range(T):
+    mat[:, t] = tensor[t, :, :].reshape([M * N])
+
+for rank in [6]:
+    for d in [1]:
+        start = time.time()
+        W, G, V, X = trvar(mat, d, rank)
+        print('rank R = {}'.format(rank))
+        print('Order d = {}'.format(d))
+        end = time.time()
+        print('Running time: %d seconds'%(end - start))
+```
+
+Or CuPy implementation:
+
+```python
+import cupy as np
+from scipy.io import netcdf
+import time
+
+data = netcdf.NetCDFFile('sst.wkmean.1990-present.nc', 'r').variables
+# data = netcdf.NetCDFFile('sst.mnmean.nc', 'r').variables
+tensor = np.array(data['sst'].data[:, :, :] / 100)
+T, M, N = tensor.shape
+mat = np.zeros((M * N, T))
+for t in range(T):
+    mat[:, t] = tensor[t, :, :].reshape([M * N])
+
+for rank in [6]:
+    for d in [1]:
+        start = time.time()
+        W, G, V, X = trvar(mat, d, rank)
+        print('rank R = {}'.format(rank))
+        print('Order d = {}'.format(d))
+        end = time.time()
+        print('Running time: %d seconds'%(end - start))
+```
+
+- Result visualization: spatial modes
+
+```python
+import seaborn as sns
+import scipy.io
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
+levs = np.arange(16, 29, 0.05)
+jet=["blue", "#007FFF", "cyan","#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"] 
+cm = LinearSegmentedColormap.from_list('my_jet', jet, N=len(levs))
+
+mask = netcdf.NetCDFFile('lsmask.nc', 'r').variables['mask'].data[0, :, :]
+mask = mask.astype(float)
+mask[mask == 0] = np.nan
+
+fig = plt.figure(figsize = (8, 6))
+for t in range(6):
+    ax = fig.add_subplot(3, 2, t + 1)
+    plt.contourf(data['lon'].data, data['lat'].data,
+                 W[:, t].reshape((M, N)) * mask, 
+                 levels = 20, linewidths = 1, 
+                 vmin = -0.02, vmax = 0.02, cmap = cm)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title('Spatial mode {}'.format(t + 1))
+    for _, spine in ax.spines.items():
+        spine.set_visible(True)
+plt.show()
+fig.savefig("temperature_mode_trvar.png", bbox_inches = "tight")
+```
+
+- Result visualization: temporal modes
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+fig = plt.figure(figsize = (12, rank))
+for t in range(rank):
+    ax = fig.add_subplot(rank, 1, t + 1)
+    plt.plot(np.arange(1, 487, 1), X[:, t], linewidth = 2, alpha = 0.8, color = 'red')
+    plt.xlim([1, 487])
+    if t + 1 < rank:
+        ax.tick_params(labelbottom = False)
+    ax.tick_params(direction = "in")
+plt.xlabel('$t$')
+plt.show()
+fig.savefig("temperature_temporal_mode.pdf", bbox_inches = "tight")
+```
+
+## Experiment on USA Temperature Data
+
+<br>
+
+## Supported by
+
+<a href="https://ivado.ca/en">
+<img align="middle" src="https://github.com/xinychen/tracebase/blob/main/graphics/ivado_logo.jpeg" alt="drawing" height="70" hspace="50">
+</a>
+<a href="https://www.cirrelt.ca/">
+<img align="middle" src="https://github.com/xinychen/tracebase/blob/main/graphics/cirrelt_logo.png" alt="drawing" height="50">
+</a>
+

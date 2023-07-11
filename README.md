@@ -363,6 +363,182 @@ fig.savefig("temperature_temporal_mode.pdf", bbox_inches = "tight")
 
 ## Experiment on USA Temperature Data
 
+- Visualize USA temperature data in the spatial dimension
+
+```python
+import numpy as np
+import geopandas as gpd
+from shapely.geometry import Point
+
+gdf = gpd.read_file("states.shp")
+stations = np.load('stations.npz')['arr_0']
+num = stations.shape[0]
+pos = np.zeros((num, len(gdf['geometry'])))
+for n in range(num):
+    pt = Point(stations[n, 0], stations[n, 1])
+    for r in range(len(gdf['geometry'])):
+        if pt.within(gdf['geometry'][r]) == True:
+            pos[n, r] = 1
+        elif pt.within((gdf['geometry'][r])) == False:
+            pos[n, r] = 0
+pos = np.sum(pos, axis = 1)
+station_us = stations[np.where(pos == 1)]
+
+mat = np.load('daymet_tmax_na_2010.npz')['arr_0']
+for t in [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
+    mat = np.append(mat, np.load('daymet_tmax_na_20{}.npz'.format(t))['arr_0'], axis = 1)
+mat = mat[np.where(pos == 1)[0], :]
+mat.shape
+```
+
+```python
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import Point
+
+fig = plt.figure(figsize = (8, 4))
+ax = fig.subplots(1)
+
+gdf = gpd.read_file("states.shp")
+gdf.plot(facecolor = 'white', edgecolor = 'black', linewidth = 1, ax = ax)
+
+lon_lat = []
+for i in range(station_us.shape[0]):
+    lon_lat.append(Point(station_us[i, 0], station_us[i, 1]))
+# df = {'temp': np.asnumpy(np.mean(mat, axis = 1)), 'geometry': lon_lat}
+df = {'temp': np.mean(mat, axis = 1), 'geometry': lon_lat}
+
+merged = gpd.GeoDataFrame(df, crs = "EPSG:4326")
+merged.plot('temp', cmap = 'RdYlGn_r', markersize = 50, 
+            legend = True, legend_kwds = {'shrink': 0.618}, ax = ax)
+
+plt.xticks([])
+plt.yticks([])
+for _, spine in ax.spines.items():
+    spine.set_visible(False)
+plt.show()
+fig.savefig("usa_temp_spatial_dist.png", bbox_inches = "tight")
+```
+
+- Visualize USA temperature data in the temporal dimension
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+fig = plt.figure(figsize = (9, 1.2))
+ax = fig.add_subplot(1, 1, 1)
+plt.plot(np.arange(1, 4381, 1), np.mean(mat, axis = 0), 
+          linewidth = 1.2, alpha = 0.8, color = 'red')
+plt.xlim([1, 4381])
+if t + 1 < rank:
+    ax.tick_params(labelbottom = False)
+ax.tick_params(direction = "in")
+plt.xticks(np.arange(1, 4380 + 1, 365), np.arange(2010, 2022, 1))
+plt.grid(axis = 'both', linestyle='dashed', linewidth = 0.1, color = 'gray')
+plt.show()
+fig.savefig("usa_temp_time_series.pdf", bbox_inches = "tight")
+```
+
+- Model setting: `rank = 4` and `d = 1`
+
+```python
+import cupy as np
+import time
+
+mat = np.load('daymet_tmax_na_2010.npz')['arr_0']
+for t in [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]:
+    mat = np.append(mat, np.load('daymet_tmax_na_20{}.npz'.format(t))['arr_0'], axis = 1)
+mat = mat[np.where(pos == 1)[0], :]
+
+for rank in [4]:
+    for d in [1]:
+        start = time.time()
+        W, G, V, X, loss_func = trvar(mat, d, rank)
+        print('rank R = {}'.format(rank))
+        print('Order d = {}'.format(d))
+        end = time.time()
+        print('Running time: %d seconds'%(end - start))
+        print()
+```
+
+- Visualize spatial modes
+
+```python
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import Point
+
+fig = plt.figure(figsize = (18, 3.5))
+# fig = plt.figure(figsize = (18, 4.5))
+
+gdf = gpd.read_file("states.shp")
+
+lon_lat = []
+for i in range(station_us.shape[0]):
+    lon_lat.append(Point(station_us[i, 0], station_us[i, 1]))
+for r in range(rank):
+    ax = fig.add_subplot(1, 4, r + 1)
+    # ax = fig.add_subplot(2, 4, r + 1)
+    # df = {'temp': W[:, r], 'geometry': lon_lat}
+    df = {'temp': np.asnumpy(W[:, r]), 'geometry': lon_lat}
+
+    gdf.plot(facecolor = 'white', edgecolor = 'black', linewidth = 1, ax = ax)
+    merged = gpd.GeoDataFrame(df, crs = "EPSG:4326")
+    # value = max(np.abs(df['temp']))
+    merged.plot('temp', cmap = 'RdYlGn_r', markersize = 15, #vmin = - value, vmax = value,
+                legend = True, legend_kwds = {'shrink': 0.5}, ax = ax)
+                # legend = True, legend_kwds = {'shrink': 0.7}, ax = ax)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title('Spatial mode {}'.format(r + 1))
+    for _, spine in ax.spines.items():
+        spine.set_visible(False)
+plt.show()
+fig.savefig("usa_temp_spatial_modes.png".format(rank), bbox_inches = "tight")
+# fig.savefig("usa_temp_spatial_modes_rank_{}_d3.png".format(rank), bbox_inches = "tight")
+```
+
+- Visualize temporal modes
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+plt.rcParams['mathtext.fontset'] = 'cm'
+fig = plt.figure(figsize = (10, rank))
+for t in range(rank):
+    ax = fig.add_subplot(rank, 1, t + 1)
+    plt.plot(np.arange(1, 4381, 1), X[:, t], linewidth = 1.2, alpha = 0.8, color = 'red')
+    plt.xlim([1, 4381])
+    if t + 1 < rank:
+        ax.tick_params(labelbottom = False)
+    ax.tick_params(direction = "in")
+    plt.xticks(np.arange(1, 4380 + 1, 365), np.arange(2010, 2022, 1))
+    plt.grid(axis = 'both', linestyle='dashed', linewidth = 0.1, color = 'gray')
+plt.show()
+fig.savefig("usa_temp_temporal_modes.pdf", bbox_inches = "tight")
+```
+
+```python
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+plt.rcParams['mathtext.fontset'] = 'cm'
+fig = plt.figure(figsize = (10, rank))
+for t in range(rank):
+    ax = fig.add_subplot(rank, 1, t + 1)
+    plt.plot(np.arange(1, 4381, 1), X[:, t], linewidth = 2, alpha = 0.8, color = 'red')
+    plt.xlim([1, 365 * 2])
+    if t + 1 < rank:
+        ax.tick_params(labelbottom = False)
+    ax.tick_params(direction = "in")
+    # plt.xticks(np.arange(1, 4380 + 1, 365), np.arange(2010, 2022, 1))
+    plt.grid(axis = 'both', linestyle='dashed', linewidth = 0.1, color = 'gray')
+plt.show()
+fig.savefig("usa_temp_temporal_modes_zoom_in.pdf", bbox_inches = "tight")
+```
+
 <br>
 
 ## Supported by

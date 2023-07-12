@@ -12,10 +12,14 @@ The scientific question is how to **discover dynamic patterns from spatiotempora
 @article{chen2022discovering,
   title={Discovering dynamic patterns from spatiotemporal data with time-varying low-rank autoregression},
   author={Chen, Xinyu and Zhang, Chengyuan and Chen, Xiaoxu and Saunier, Nicolas and Sun, Lijun},
-  journal={arXiv preprint arXiv:2211.15482},
+  journal={IEEE Transactions on Knowledge and Data Engineering},
   year={2022}
 }
 ```
+
+- **Blog posts**
+  - [Discovering fluid dynamics with time-varying autoregression](https://medium.com/p/b75d23b23a62). January 20, 2023.
+  - [Time-varying autoregression with tensor factorization](https://medium.com/p/567ab4d53e7a). June 12, 2023.
 
 <br>
 

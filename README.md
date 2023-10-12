@@ -83,6 +83,196 @@ fig.savefig('fluid_flow_heatmap.png', bbox_inches = 'tight')
 
 We consider to use an [NYC (yellow) taxi trip dataset](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page). We use 69 zones in Manhattan as pickup/dropoff zones and aggregate daily taxi trip volume of the data from 2012 to 2021. Therefore, the daily trip volume tensor is of size $69\times 69\times 3653$.
 
+> Data folder: `../datasets/NYC-taxi/`
+
+- Draw NYC taxi pickup trips in January 2020.
+
+```python
+import numpy as np
+
+tensor = np.load('yellow_taxi_trip_2020.npz')['arr_0']
+manhattan = np.array([127, 128, 153, 120, 243, 244, 116, 42, 152, 166, 41, 74, 194, 24, 151,
+                      238, 75, 239, 43, 236, 263, 143, 142, 262, 50, 237, 141, 140, 202, 163,
+                      48, 230, 161, 162, 229, 246, 100, 68, 186, 233, 164, 170, 90, 234, 137,
+                      158, 249, 107, 113, 224, 114, 125, 79, 211, 4, 144, 231, 148, 232, 13,
+                      261, 45, 209, 87, 12, 88, 105, 104, 103])
+
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+plt.rcParams['font.size'] = 10
+fig = plt.figure(figsize = (3, 3.5))
+ax = fig.add_subplot(1, 1, 1)
+vec = np.sum(np.sum(tensor[:, :, 0 : 31], axis = 2), axis = 1)
+manhattan[np.where(vec == vec.max())[0]][0]
+data = {'OBJECTID': manhattan, 'count': vec}
+
+shape = gpd.read_file("taxi_zones.shp")
+Manhattan = shape[shape.borough == 'Manhattan']
+df = pd.DataFrame(data)
+merged = Manhattan.set_index('OBJECTID').join(df.set_index('OBJECTID'))
+merged = merged.reset_index()
+value = max(np.abs(data['count']))
+merged.plot('count', cmap = 'YlOrRd',
+            legend = False, legend_kwds = {'shrink': 0.618},
+            vmin = 0, vmax = 300000, ax = ax)
+plt.xticks([])
+plt.yticks([])
+for _, spine in ax.spines.items():
+    spine.set_visible(False)
+ax.set_facecolor('lightskyblue')
+# fig.savefig("taxi_spatial_pickup_2020_Jan.pdf", bbox_inches = "tight")
+fig.savefig("taxi_spatial_pickup_2020_Jan.png", bbox_inches = "tight")
+plt.show()
+```
+
+<p align="center">
+<img align="middle" src="graphics/taxi_spatial_pickup_2020_Jan.png" alt="drawing" width="150">
+</p>
+
+<p align="center"><b>Figure 2</b>: Total pickup trips of January 2020 in Mahattan, USA.</p>
+
+- Draw NYC taxi pickup trips in the first four months of 2020.
+
+```python
+import numpy as np
+
+tensor = np.load('yellow_taxi_trip_2020.npz')['arr_0']
+manhattan = np.array([127, 128, 153, 120, 243, 244, 116, 42, 152, 166, 41, 74, 194, 24, 151,
+                      238, 75, 239, 43, 236, 263, 143, 142, 262, 50, 237, 141, 140, 202, 163,
+                      48, 230, 161, 162, 229, 246, 100, 68, 186, 233, 164, 170, 90, 234, 137,
+                      158, 249, 107, 113, 224, 114, 125, 79, 211, 4, 144, 231, 148, 232, 13,
+                      261, 45, 209, 87, 12, 88, 105, 104, 103])
+
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+plt.rcParams['font.size'] = 10
+fig = plt.figure(figsize = (12, 3.5))
+for r in range(4):
+    ax = fig.add_subplot(1, 4, r + 1)
+    if r == 0:
+        vec = np.sum(np.sum(tensor[:, :, 0 : 31], axis = 2), axis = 1)
+    elif r == 1:
+        vec = np.sum(np.sum(tensor[:, :, 31 : 59], axis = 2), axis = 1)
+    elif r == 2:
+        vec = np.sum(np.sum(tensor[:, :, 59 : 90], axis = 2), axis = 1)
+    elif r == 3:
+        vec = np.sum(np.sum(tensor[:, :, 90 : 120], axis = 2), axis = 1)
+    manhattan[np.where(vec == vec.max())[0]][0]
+    data = {'OBJECTID': manhattan, 'count': vec}
+
+    shape = gpd.read_file("taxi_zones.shp")
+    Manhattan = shape[shape.borough == 'Manhattan']
+    df = pd.DataFrame(data)
+    merged = Manhattan.set_index('OBJECTID').join(df.set_index('OBJECTID'))
+    merged = merged.reset_index()
+    value = max(np.abs(data['count']))
+    if r == 0 or r == 1:
+        merged.plot('count', cmap = 'YlOrRd',
+                    legend = True, legend_kwds = {'shrink': 0.618},
+                    vmin = 0, vmax = 300000, ax = ax)
+    if r == 2:
+        merged.plot('count', cmap = 'YlOrRd',
+                    legend = True, legend_kwds = {'shrink': 0.618},
+                    vmin = 0, vmax = 150000, ax = ax)
+    if r == 3:
+        merged.plot('count', cmap = 'YlOrRd',
+                    legend = True, legend_kwds = {'shrink': 0.618},
+                    vmin = 0, vmax = 10000, ax = ax)
+    plt.xticks([])
+    plt.yticks([])
+    if r == 0:
+        plt.title('January (2020)')
+    elif r == 1:
+        plt.title('February (2020)')
+    elif r == 2:
+        plt.title('March (2020)')
+    elif r == 3:
+        plt.title('April (2020)')
+    for _, spine in ax.spines.items():
+        spine.set_visible(False)
+    ax.set_facecolor('lightskyblue')
+# fig.savefig("taxi_spatial_pickup_2020_4months.pdf", bbox_inches = "tight")
+fig.savefig("taxi_spatial_pickup_2020_4months.png", bbox_inches = "tight")
+plt.show()
+```
+
+<p align="center">
+<img align="middle" src="graphics/taxi_spatial_pickup_2020_4months.png" alt="drawing" width="600">
+</p>
+
+<p align="center"><b>Figure 3</b>: Total pickup trips of the first four months of 2020 in Mahattan, USA.</p>
+
+- Draw NYC taxi trips in the whole year of 2020.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize = (10, 1.5))
+data = np.load('yellow_taxi_trip_2020.npz')['arr_0']
+ax = fig.add_subplot(1, 1, 1)
+plt.plot(np.sum(np.sum(data, axis = 0), axis = 0),
+         linewidth = 2, color = 'red', alpha = 0.8)
+ax.tick_params(direction = "in")
+plt.ylabel('Yellow taxi trips')
+plt.xlim([0, 366])
+plt.ylim([0e+5, 2.5e+5])
+plt.xticks(np.arange(0, 366, 30))
+plt.xlabel('Day of year (2020)')
+plt.show()
+# fig.savefig("yellow_taxi_trips_2020.pdf", bbox_inches = "tight")
+fig.savefig("yellow_taxi_trips_2020.png", bbox_inches = "tight")
+```
+
+<p align="center">
+<img align="middle" src="graphics/yellow_taxi_trips_2020.png" alt="drawing" width="500">
+</p>
+
+<p align="center"><b>Figure 4</b>: NYC taxi trips in the whole year of 2020 in Mahattan, USA. There is a significant trip reduction due to COVID-19 in March.</p>
+
+It is possible to see the specific trip volumes of the first four months of 2020.
+
+```python
+data = np.load('yellow_taxi_trip_2020.npz')['arr_0']
+print(np.sum(data[:, :, 0 : 31]))
+print(np.sum(data[:, :, 31 : 59]))
+print(np.sum(data[:, :, 59 : 90]))
+print(np.sum(data[:, :, 90 : 120]))
+```
+produces the results as `5,455,923` (January), `5,213,247` (February), `2,752,684` (March), and `192,024` (April).
+
+- Draw NYC taxi trips from 2012 to 2021.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize = (6, 9))
+for t in range(12, 22):
+    data = np.load('yellow_taxi_trip_20{}.npz'.format(t))['arr_0']
+    ax = fig.add_subplot(10, 1, t - 11)
+    plt.plot(np.sum(np.sum(data, axis = 0), axis = 0),
+             linewidth = 1.5, color = 'red', alpha = 0.8)
+    ax.tick_params(direction = "in")
+    if t == 16:
+        plt.ylabel('Trip volume')
+    plt.xlim([0, 366])
+    plt.ylim([0e+5, 5.5e+5])
+    plt.xticks(np.arange(0, 366, 30))
+    if t < 21:
+        ax.set_title('20{}'.format(t), x = 0.9, y = 1, pad = -35)
+        ax.tick_params(labelbottom = False)
+    else:
+        ax.set_title('20{}'.format(t), x = 0.9, y = 0, pad = 10)
+        plt.xlabel('Day')
+plt.show()
+fig.savefig("yellow_taxi_trip_volume.pdf", bbox_inches = "tight")
+```
+
 <br>
 
 ## Algorithm Implementation: Time-Varying Reduced-Rank VAR

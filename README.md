@@ -301,7 +301,7 @@ plt.show()
 ```
 
 <p align="center">
-<img align="middle" src="graphics/taxi_dropoff_minus_pickup.png" alt="drawing" width="150">
+<img align="middle" src="graphics/taxi_dropoff_minus_pickup.png" alt="drawing" width="200">
 </p>
 
 <p align="center"><b>Figure 5</b>: Total dropoff trips minus total pickup trips in the 69 zones of Manhattan.</p>

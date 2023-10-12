@@ -273,6 +273,40 @@ plt.show()
 fig.savefig("yellow_taxi_trip_volume.pdf", bbox_inches = "tight")
 ```
 
+- Draw NYC pickup and dropoff trips.
+
+```python
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize = (3, 5))
+ax = fig.add_subplot(1, 1, 1)
+data = {'OBJECTID': manhattan, 'count': np.sum(np.sum(tensor, axis = 2), axis = 0) - np.sum(np.sum(tensor, axis = 2), axis = 1)}
+
+shape = gpd.read_file("taxi_zones.shp")
+Manhattan = shape[shape.borough == 'Manhattan']
+df = pd.DataFrame(data)
+merged = Manhattan.set_index('OBJECTID').join(df.set_index('OBJECTID'))
+merged = merged.reset_index()
+
+merged.plot('count', cmap = 'RdYlBu_r', legend = True, legend_kwds = {'shrink': 0.618}, ax = ax)
+plt.xticks([])
+plt.yticks([])
+for _, spine in ax.spines.items():
+    spine.set_visible(False)
+# fig.savefig("taxi_dropoff_minus_pickup.pdf", bbox_inches = "tight")
+fig.savefig("taxi_dropoff_minus_pickup.png", bbox_inches = "tight")
+plt.show()
+```
+
+<p align="center">
+<img align="middle" src="graphics/taxi_dropoff_minus_pickup.png" alt="drawing" width="150">
+</p>
+
+<p align="center"><b>Figure 5</b>: Total dropoff trips minus total pickup trips in the 69 zones of Manhattan.</p>
+
+
 <br>
 
 ## Algorithm Implementation: Time-Varying Reduced-Rank VAR
@@ -741,6 +775,12 @@ for t in range(rank):
 plt.show()
 fig.savefig("usa_temp_temporal_modes_zoom_in.pdf", bbox_inches = "tight")
 ```
+
+<br>
+
+## Experiments on NYC Taxi Data
+
+
 
 <br>
 

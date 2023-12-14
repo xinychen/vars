@@ -6,7 +6,7 @@
 
 <h6 align="center">Made by Xinyu Chen • :globe_with_meridians: <a href="https://xinychen.github.io">https://xinychen.github.io</a></h6>
 
-The scientific question is how to **discover interpretable dynamic patterns from spatiotemporal data**. We utilize the Vector Autoregression (VAR) as a basic tool to explore the spatiotemporal data in real-world applications.
+The scientific question is how to **discover interpretable dynamic patterns from spatiotemporal data**. We utilize the Vector Autoregression (VAR) as a basic tool to explore the spatiotemporal data in real-world applications. [[Blog post](https://spatiotemporal-data.github.io/posts/time_varying_model/)]
 
 ```bibtex
 @article{chen2023discovering,
@@ -16,10 +16,6 @@ The scientific question is how to **discover interpretable dynamic patterns from
   year={2023}
 }
 ```
-
-- **Blog posts**
-  - [Discovering fluid dynamics with time-varying autoregression](https://medium.com/p/b75d23b23a62). January 20, 2023.
-  - [Time-varying autoregression with tensor factorization](https://medium.com/p/567ab4d53e7a). June 12, 2023.
 
 <br>
 

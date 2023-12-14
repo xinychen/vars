@@ -6,14 +6,14 @@
 
 <h6 align="center">Made by Xinyu Chen • :globe_with_meridians: <a href="https://xinychen.github.io">https://xinychen.github.io</a></h6>
 
-The scientific question is how to **discover dynamic patterns from spatiotemporal data**. We utilize the Vector Autoregression (VAR) as a basic tool to explore the spatiotemporal data in real-world applications.
+The scientific question is how to **discover interpretable dynamic patterns from spatiotemporal data**. We utilize the Vector Autoregression (VAR) as a basic tool to explore the spatiotemporal data in real-world applications.
 
 ```bibtex
-@article{chen2022discovering,
+@article{chen2023discovering,
   title={Discovering dynamic patterns from spatiotemporal data with time-varying low-rank autoregression},
   author={Chen, Xinyu and Zhang, Chengyuan and Chen, Xiaoxu and Saunier, Nicolas and Sun, Lijun},
   journal={IEEE Transactions on Knowledge and Data Engineering},
-  year={2022}
+  year={2023}
 }
 ```
 

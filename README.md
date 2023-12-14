@@ -29,47 +29,6 @@ The scientific question is how to **discover interpretable dynamic patterns from
 
 To analyze the underlying spatiotemporal patterns of fluid dynamics, we consider the cylinder wake dataset in which the flow shows a supercritical Hopf bifurcation. [The cylinder wake dataset](http://dmdbook.com/) is collected from the fluid flow passing a circular cylinder with laminar vortex shedding at Reynolds number Re = 100, which is larger than the critical Reynolds number, using direct numerical simulations of the Navier-Stokes equations. This is a representative three-dimensional flow dataset in fluid dynamics, consisting of matrix-variate time series of vorticity field snapshots for the wake behind a cylinder. The dataset is of size $199\times 449\times 150$, representing 199-by-449 vorticity fields with 150 time snapshots.
 
-```python
-import numpy as np
-import seaborn as sns
-import scipy.io
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-color = scipy.io.loadmat('CCcool.mat')
-cc = color['CC']
-newcmp = LinearSegmentedColormap.from_list('', cc)
-
-tensor = np.load('tensor.npz')['arr_0']
-tensor = tensor[:, :, : 150]
-M, N, T = tensor.shape
-
-plt.rcParams['font.size'] = 13
-plt.rcParams['mathtext.fontset'] = 'cm'
-fig = plt.figure(figsize = (7, 8))
-id = np.array([5, 10, 15, 20, 25, 30, 35, 40])
-for t in range(8):
-    ax = fig.add_subplot(4, 2, t + 1)
-    ax = sns.heatmap(tensor[:, :, id[t] - 1], cmap = newcmp, vmin = -5, vmax = 5, cbar = False)
-    ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), tensor[:, :, id[t] - 1],
-               levels = np.linspace(0.15, 15, 30), colors = 'k', linewidths = 0.7)
-    ax.contour(np.linspace(0, N, N), np.linspace(0, M, M), tensor[:, :, id[t] - 1],
-               levels = np.linspace(-15, -0.15, 30), colors = 'k', linestyles = 'dashed', linewidths = 0.7)
-    plt.xticks([])
-    plt.yticks([])
-    plt.title(r'$t = {}$'.format(id[t]))
-    for _, spine in ax.spines.items():
-        spine.set_visible(True)
-plt.show()
-fig.savefig('fluid_flow_heatmap.png', bbox_inches = 'tight')
-```
-
-<p align="center">
-<img align="middle" src="graphics/fluid_flow_heatmap.png" alt="drawing" width="300">
-</p>
-
-<p align="center"><b>Figure 1</b>: Heatmaps (snapshots) of the fluid flow at times $t=5,10,\ldots,40$. It shows that the snapshots at times $t=5$ and $t=35$ are even same, and the snapshots at times $t=10$ and $t=40$ are also even same, allowing one to infer the seasonality as 30 for the first 50 snapshots.</p>
-
-<br>
 
 ### Sea Surface Temperature
 

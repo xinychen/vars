@@ -86,7 +86,7 @@ plt.show()
 <img align="middle" src="graphics/taxi_spatial_pickup_2020_Jan.png" alt="drawing" width="150">
 </p>
 
-<p align="center"><b>Figure 2</b>: Total pickup trips of January 2020 in Mahattan, USA.</p>
+<p align="center"><b>Figure 1</b>: Total pickup trips of January 2020 in Mahattan, USA.</p>
 
 - Draw NYC taxi pickup trips in the first four months of 2020.
 
@@ -159,7 +159,7 @@ plt.show()
 <img align="middle" src="graphics/taxi_spatial_pickup_2020_4months.png" alt="drawing" width="600">
 </p>
 
-<p align="center"><b>Figure 3</b>: Total pickup trips of the first four months of 2020 in Mahattan, USA.</p>
+<p align="center"><b>Figure 2</b>: Total pickup trips of the first four months of 2020 in Mahattan, USA.</p>
 
 - Draw NYC taxi trips in the whole year of 2020.
 
@@ -187,7 +187,7 @@ fig.savefig("yellow_taxi_trips_2020.png", bbox_inches = "tight")
 <img align="middle" src="graphics/yellow_taxi_trips_2020.png" alt="drawing" width="500">
 </p>
 
-<p align="center"><b>Figure 4</b>: NYC taxi trips in the whole year of 2020 in Mahattan, USA. There is a significant trip reduction due to COVID-19 in March.</p>
+<p align="center"><b>Figure 3</b>: NYC taxi trips in the whole year of 2020 in Mahattan, USA. There is a significant trip reduction due to COVID-19 in March.</p>
 
 It is possible to see the specific trip volumes of the first four months of 2020.
 
@@ -259,7 +259,7 @@ plt.show()
 <img align="middle" src="graphics/taxi_dropoff_minus_pickup.png" alt="drawing" width="200">
 </p>
 
-<p align="center"><b>Figure 5</b>: Total dropoff trips minus total pickup trips in the 69 zones of Manhattan.</p>
+<p align="center"><b>Figure 4</b>: Total dropoff trips minus total pickup trips in the 69 zones of Manhattan.</p>
 
 
 <br>
@@ -417,7 +417,7 @@ fig.savefig("fluid_mode_trvar.png", bbox_inches = "tight")
 <img align="middle" src="graphics/fluid_mode_trvar.png" alt="drawing" width="300">
 </p>
 
-<p align="center"><b>Figure 2</b>: Mean vorticity field and spatial modes of the fluid flow. Spatial modes are plotted by the columns of $\boldsymbol{W}$ in which seven panels correspond to the rank $R = 7$. Note that the colorbars of all modes are on the same scale.</p>
+<p align="center"><b>Figure 5</b>: Mean vorticity field and spatial modes of the fluid flow. Spatial modes are plotted by the columns of $\boldsymbol{W}$ in which seven panels correspond to the rank $R = 7$. Note that the colorbars of all modes are on the same scale.</p>
 
 - Result visualization: temporal modes
 

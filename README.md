@@ -9,11 +9,15 @@
 The scientific question is how to **discover interpretable dynamic patterns from spatiotemporal data**. We utilize the Vector Autoregression (VAR) as a basic tool to explore the spatiotemporal data in real-world applications. Notably, we highly recommend you to read our [blog post](https://spatiotemporal-data.github.io/posts/time_varying_model/) to reproduce the whole study.
 
 ```bibtex
-@article{chen2023discovering,
+@article{chen2024discovering,
   title={Discovering dynamic patterns from spatiotemporal data with time-varying low-rank autoregression},
   author={Chen, Xinyu and Zhang, Chengyuan and Chen, Xiaoxu and Saunier, Nicolas and Sun, Lijun},
   journal={IEEE Transactions on Knowledge and Data Engineering},
-  year={2023}
+  volume={36},
+  number={2},
+  pages={504--517},
+  year={2024},
+  publisher={IEEE}
 }
 ```
 
